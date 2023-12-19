@@ -22,7 +22,7 @@ jobs:
         id: get_pr_numbers
         run: |
           OWNER="shivamnaik6574"
-          REPO="auto-merge"
+          REPO="auto-pr"
           PR_NUMBERS=$(curl -s -H "Accept: application/vnd.github.v3+json" \
             "https://github.com/shivamnaik6574/auto-pr/commits/" | \
             jq -r '.[].number' | head -n 100)
