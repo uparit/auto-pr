@@ -1,0 +1,55 @@
+name: Create PR IDs File
+
+on:
+  push:
+    branches:
+      - main
+      - auto-pr-branch  
+
+jobs:
+  create_pr_ids:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Git
+        run: |
+          git config --global user.email "shivamnaik6574@gmail.com"
+          git config --global user.name "shivamnaik6574"
+      - name: Get Latest PR Numbers
+        id: get_pr_numbers
+        run: |
+          OWNER="shivamnaik6574"
+          REPO="auto-merge"
+          PR_NUMBERS=$(curl -s -H "Accept: application/vnd.github.v3+json" \
+            "https://github.com/shivamnaik6574/auto-pr/commits/" | \
+            jq -r '.[].number' | head -n 100)
+          echo "::set-output name=pr_numbers::$PR_NUMBERS"
+      - name: Create PR IDs Bundle
+        run: |
+          PR_NUMBERS="${{ steps.get_pr_numbers.outputs.pr_numbers }}"
+          PR_IDS=()
+          for PR_NUMBER in $PR_NUMBERS
+          do
+            PR_ID=$(curl -s -H "Authorization: token ${{ secrets.TOKEN }}" \
+              "https://api.github.com/repos/$OWNER/$REPO/pulls/$PR_NUMBER" | \
+              jq -r '.id')
+            PR_IDS+=("$PR_ID")
+          done
+          COMMIT_IDS_BUNDLE=$(git log --pretty=format:'%h' -n 100)
+          ALL_IDS=($(cat pull_request_id.txt) "${PR_IDS[@]}" "${COMMIT_IDS_BUNDLE[@]}")
+          ALL_IDS=($(echo "${ALL_IDS[@]}" | tr ' ' '\n' | sort -u))
+          echo "PR-Numbers" > pull_request_id.txt
+          for ID in "${ALL_IDS[@]}"
+          do
+            echo "$ID" >> pull_request_id.txt
+          done
+          git pull origin main
+          git add pull_request_id.txt
+          git commit -m "Update pull request and commit IDs bundle"
+          git push origin main
+      - name: Display PR IDs and Commit IDs Bundle
+        run: |
+          cat pull_request_id.txt
