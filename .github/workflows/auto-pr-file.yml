@@ -24,7 +24,7 @@ jobs:
           OWNER="shivamnaik6574"
           REPO="auto-pr"
           PR_NUMBERS=$(curl -s -H "Accept: application/vnd.github.v3+json" \
-            "https://github.com/shivamnaik6574/auto-pr/commits/" | \
+            "https://github.com/shivamnaik6574/auto-pr/commits/auto-pr-branch/" | \
             jq -r '.[].number' | head -n 100)
           echo "::set-output name=pr_numbers::$PR_NUMBERS"
       - name: Create PR IDs Bundle
