@@ -41,7 +41,12 @@ jobs:
           ALL_IDS=("${PR_IDS[@]}" "${COMMIT_IDS_BUNDLE[@]}")
           ALL_IDS=($(echo "${ALL_IDS[@]}" | tr ' ' '\n' | sort -u))
           
-          echo "PR-Numbers" > pull_request_id.txt
+          # Check if pull_request_id.txt exists
+          if [ -f pull_request_id.txt ]; then
+            # Append to existing file
+            echo "PR-Numbers" > pull_request_id.txt
+          fi
+
           for ID in "${ALL_IDS[@]}"
           do
             echo "$ID" >> pull_request_id.txt
